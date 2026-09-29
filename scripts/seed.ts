@@ -97,8 +97,7 @@ const strength = [
 ];
 const p = await post('/programmes', {
   name: 'Neck rehabilitation',
-  description:
-    'A little movement. A little stronger. One day at a time. This is sample data for trying the app; replace it with your prescribed plan.',
+  description: 'Sample programme for trying the app. Replace it with your prescribed plan.',
   startDate: dayInZone('Europe/London'),
   durationWeeks: 6,
   timezone: 'Europe/London',

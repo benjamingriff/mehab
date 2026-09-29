@@ -10,10 +10,18 @@ The Mobbin MCP was used to search three areas: daily health routines, exercise p
 | [Peloton Strength+ — Workout overview](https://mobbin.com/screens/6d6f1c82-c933-4b90-938b-d562153962b9) | Grouped exercise rows with duration and count metadata                 | A scan-friendly list, with instruction details available when wanted |
 | [Visible — Symptom trends](https://mobbin.com/screens/9e9b808a-623e-4296-b98d-7292baab784b)             | Restrained symptom plots and explanatory copy                          | Simple labelled symptom charts; no invented data on missing days     |
 
-The final design is original: warm ivory, forest green, muted sage, serif headlines and system-font controls. A lightweight botanical SVG gives the programme card a sense of growth without exercise photography or clinical branding. The matching app icon is derived from the same vector artwork.
+## Visual direction (v2)
 
-The product prioritises the daily plan, a complete exercise reference, and easy completion. It uses four bottom tabs. Completion is encouragement, not a points system. Progress distinguishes due sessions from upcoming ones and shows the latest recorded symptom values without interpreting them as treatment recommendations.
+The first pass used serif greetings, botanical artwork and reassurance copy. It read as a wellness app rather than a training tool. The current UI follows exercise-prescription apps such as Runna: the plan and the dose are the loudest things on screen.
 
-The follow-along flow was intentionally removed from the implementation: there is no player, exercise stepping or timer. Exercise instructions expand inside the list. The user decides how to execute the plan.
+- **Palette.** Near-black ink on a warm grey canvas with white cards. Electric blue marks selection and data. A volt green is reserved for the primary action on dark surfaces. Status colours (green done, amber not recorded, red rejected) always ship with an icon or label.
+- **Session identity.** Each exercise category has a fixed colour: mobility teal, strength orange, balance violet, cardio pink, anything else blue. The set was checked with the dataviz palette validator for colour-blind separation and contrast. A session takes the colour of its dominant category. Structure bars show one segment per exercise, sized by sets.
+- **Type.** System font only, heavy weights with tight tracking for titles and tabular numbers for stats.
+- **Copy.** Factual and short. No greetings, slogans or encouragement lines. Empty states say what is missing and nothing else.
+- **Today.** Week strip with a completion bar under each day, a programme strip segmented by phase, a dark "up next" card, then compact session and check-in rows.
+- **Session.** Duration, exercise and set counts up top. Each exercise leads with its dose (for example "3 × 20 sec hold") with side, rest, load and equipment as chips. Complete and skip live in a sticky footer.
+- **Feel.** Cards scale slightly on press, and native builds give selection and success haptics.
+
+The follow-along flow remains intentionally out of scope: there is no player, exercise stepping or timer.
 
 Browser screenshots from automated verification are written to `artifacts/` locally. They are not Mobbin assets and are not included in the repository by default.

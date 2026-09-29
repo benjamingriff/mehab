@@ -49,7 +49,7 @@ test('connect, read the whole session, complete offline, reload, sync, check in,
   await page.getByLabel('Server address').fill('http://localhost:3000');
   await page.getByLabel('Personal access token').fill(account.token);
   await page.getByRole('button', { name: 'Connect my account' }).click();
-  await expect(page.getByText('Your plan for today', { exact: true })).toBeVisible();
+  await expect(page.getByText('Sessions', { exact: true })).toBeVisible();
   await expect(page.getByText('Morning mobility', { exact: true })).toBeVisible();
   await expect(page.getByText('Midday reset', { exact: true })).toBeVisible();
   await expect(page.getByText('Evening mobility', { exact: true })).toBeVisible();
@@ -69,9 +69,9 @@ test('connect, read the whole session, complete offline, reload, sync, check in,
   await page.screenshot({ path: 'artifacts/session.png', fullPage: true });
   await page.route('http://localhost:3000/**', (route) => route.abort());
   await page.getByRole('button', { name: 'Mark session complete', exact: true }).click();
-  await expect(page.getByText('A little stronger.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Session complete', { exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByText('A little stronger.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Session complete', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Back to today', exact: true }).click();
   await page.getByText('Daily check-in', { exact: true }).click();
   await page.getByRole('radio', { name: 'Pain 3', exact: true }).click();
@@ -80,7 +80,7 @@ test('connect, read the whole session, complete offline, reload, sync, check in,
   await page.getByLabel('Anything you’d like to note?').fill('Browser trial: saved while offline.');
   await page.screenshot({ path: 'artifacts/check-in.png', fullPage: true });
   await page.getByRole('button', { name: 'Save check-in', exact: true }).click();
-  await expect(page.getByText('A moment, noted.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Check-in saved', { exact: true })).toBeVisible();
   await page.reload();
   await page.goto('/settings');
   await expect(page.getByText('2 changes saved on this device', { exact: true })).toBeVisible();
@@ -111,7 +111,7 @@ test('connect, read the whole session, complete offline, reload, sync, check in,
   await page.goto('/');
   await page.getByText('Midday reset', { exact: true }).click();
   await page.getByRole('button', { name: 'Skip this session', exact: true }).click();
-  await expect(page.getByText('Space for a rest.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Session skipped', { exact: true })).toBeVisible();
   await page.goto('/settings');
   await expect(page.getByText('1 change saved on this device', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Replace access token', exact: true }).click();

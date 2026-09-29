@@ -1,84 +1,92 @@
 import React, { useState } from 'react';
-import { View, TextInput, Platform } from 'react-native';
+import { Platform, TextInput, View } from 'react-native';
 import { useStore } from './store';
-import { Botanical, Button, C, Card, Icon, Label, Row, Screen, T, s } from './ui';
+import { Button, C, Logo, Row, Screen, T, s } from './ui';
+
 export function Connect() {
   const store = useStore();
   const [url, setUrl] = useState(Platform.OS === 'web' ? 'http://localhost:3000' : '');
   const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const submit = () => {
+    setBusy(true);
+    setError('');
+    store
+      .connect(url, token)
+      .catch((e) => setError(e.message))
+      .finally(() => setBusy(false));
+  };
   return (
-    <Screen refresh={false}>
-      <Row style={{ marginVertical: 20 }}>
-        <Icon name="sun" size={24} />
-        <T size={21} weight="600" style={{ letterSpacing: -0.5 }}>
-          rehab
-        </T>
-        <View style={{ flex: 1 }} />
-        <Label>YOUR DAILY PRACTICE</Label>
-      </Row>
-      <View style={{ alignItems: 'center', paddingVertical: 30 }}>
-        <Botanical size={150} color={C.green} />
-      </View>
-      <T serif size={43} style={{ letterSpacing: -1.7 }}>
-        A little each day.
-      </T>
-      <T size={17} color={C.muted} style={{ marginTop: 14, marginBottom: 30, lineHeight: 26 }}>
-        Your plan, a moment to move, and space to notice how you feel.
-      </T>
-      <Card style={{ gap: 16 }}>
-        <T size={20} serif>
-          Welcome to your trial
-        </T>
-        <T color={C.muted} size={13}>
-          Connect the app to your rehab account. Your programme will be ready when you are.
-        </T>
-        <Label>SERVER ADDRESS</Label>
-        <TextInput
-          accessibilityLabel="Server address"
-          style={s.input}
-          value={url}
-          onChangeText={setUrl}
-          placeholder="https://your-api.up.railway.app"
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-        />
-        <Label>PERSONAL ACCESS TOKEN</Label>
-        <TextInput
-          accessibilityLabel="Personal access token"
-          style={s.input}
-          value={token}
-          onChangeText={setToken}
-          placeholder="Paste your token"
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {!!error && (
-          <T color={C.red} size={13}>
-            {error}
-          </T>
-        )}
+    <Screen
+      refresh={false}
+      footer={
         <Button
           title={busy ? 'Connecting…' : 'Connect my account'}
-          icon="arrow-right"
+          iconRight="arrow-right"
           disabled={busy || !url || !token}
-          onPress={() => {
-            setBusy(true);
-            setError('');
-            store
-              .connect(url, token)
-              .catch((e) => setError(e.message))
-              .finally(() => setBusy(false));
-          }}
+          onPress={submit}
         />
-      </Card>
-      <T color={C.muted} size={12} style={{ textAlign: 'center', marginTop: 20 }}>
-        Your token stays in this device’s secure storage.
-        {Platform.OS === 'web' ? ' In this browser, it lasts for this tab’s session.' : ''}
+      }
+    >
+      <Row gap={10} style={{ marginTop: 12 }}>
+        <Logo size={30} />
+        <T v="headline" weight="800">
+          rehab
+        </T>
+      </Row>
+      <T v="display" style={{ marginTop: 48 }}>
+        Connect your account
       </T>
+      <T v="body" color={C.ink2} style={{ marginTop: 10 }}>
+        Enter your server address and the personal access token you were given.
+      </T>
+      <View style={{ gap: 18, marginTop: 32 }}>
+        <View style={{ gap: 8 }}>
+          <T v="caption" weight="700" color={C.ink2}>
+            Server address
+          </T>
+          <TextInput
+            accessibilityLabel="Server address"
+            style={s.input}
+            value={url}
+            onChangeText={setUrl}
+            placeholder="https://your-api.up.railway.app"
+            placeholderTextColor={C.faint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+        </View>
+        <View style={{ gap: 8 }}>
+          <T v="caption" weight="700" color={C.ink2}>
+            Personal access token
+          </T>
+          <TextInput
+            accessibilityLabel="Personal access token"
+            style={s.input}
+            value={token}
+            onChangeText={setToken}
+            placeholder="rehab_…"
+            placeholderTextColor={C.faint}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            onSubmitEditing={() => url && token && !busy && submit()}
+          />
+        </View>
+        {!!error && (
+          <View style={{ padding: 14, borderRadius: 12, backgroundColor: C.badSoft }}>
+            <T v="callout" color={C.bad}>
+              {error}
+            </T>
+          </View>
+        )}
+        <T v="caption" color={C.muted}>
+          The token is kept in this device’s secure storage.
+          {Platform.OS === 'web' ? ' In a browser it lasts until the tab is closed.' : ''}
+        </T>
+      </View>
     </Screen>
   );
 }
