@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rehab
+      POSTGRES_PASSWORD: rehab
+      POSTGRES_DB: rehab
+    ports: ['127.0.0.1:55432:5432']
+    volumes: ['rehab_pg:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rehab']
+      interval: 2s
+      retries: 15
+  api:
+    profiles: [trial]
+    build: .
+    image: rehab-api:trial
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://rehab:rehab@postgres:5432/rehab
+      PORT: 3000
+      CORS_ORIGINS: http://localhost:8081,http://127.0.0.1:8081
+    ports: ['127.0.0.1:3000:3000']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: [sh, -c, 'node apps/api/dist/migrate.js && node apps/api/dist/server.js']
+  preview:
+    profiles: [trial]
+    image: nginx:alpine
+    restart: unless-stopped
+    ports: ['127.0.0.1:8081:80']
+    volumes:
+      - ./apps/mobile/dist:/usr/share/nginx/html:ro
+      - ./scripts/preview.nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on: [api]
+volumes:
+  rehab_pg:

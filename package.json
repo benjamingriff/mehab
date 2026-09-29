@@ -1,0 +1,40 @@
+{
+  "name": "rehab",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w @rehab/api",
+    "dev:mobile": "npm run start -w @rehab/mobile",
+    "dev:web": "npm run web -w @rehab/mobile",
+    "db:migrate": "npm run migrate -w @rehab/api",
+    "account:create": "npm run account -w @rehab/api",
+    "seed": "tsx scripts/seed.ts",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc --noEmit",
+    "test": "npm run test -w @rehab/api",
+    "build:api": "npm run build -w @rehab/api",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:e2e": "playwright test",
+    "preview:up": "npm run export:web -w @rehab/mobile && docker compose --profile trial up -d --build",
+    "preview:down": "docker compose --profile trial stop preview api"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^24.0.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3"
+  },
+  "type": "module",
+  "overrides": {
+    "react-native-reanimated": "4.5.1",
+    "react-native-worklets": "0.10.1",
+    "decode-uri-component": "0.5.0",
+    "xcode": {
+      "uuid": "11.1.1"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@rehab/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/server.ts",
+    "start": "node dist/server.js",
+    "build": "esbuild src/server.ts src/migrate.ts src/account.ts --bundle --platform=node --format=esm --packages=external --outdir=dist --alias:@rehab/core=../../packages/core/src/index.ts",
+    "migrate": "tsx --env-file-if-exists=../../.env src/migrate.ts",
+    "account": "tsx --env-file-if-exists=../../.env src/account.ts",
+    "test": "tsx --env-file-if-exists=../../.env --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "@fastify/swagger": "^9.0.0",
+    "@fastify/swagger-ui": "^6.1.1",
+    "@rehab/core": "*",
+    "fastify": "^5.12.5",
+    "fastify-type-provider-zod": "^6.1.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.5",
+    "esbuild": "^0.28.2"
+  }
+}
