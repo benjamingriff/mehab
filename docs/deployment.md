@@ -2,6 +2,8 @@
 
 The repository is prepared for deployment. Railway and Apple/Expo account setup, signing and installation are the remaining steps; nothing has been published automatically.
 
+You need a GitHub repository, a Railway account, an Expo account, and an active paid Apple Developer Program membership for the signed iPhone preview. EAS builds the iOS app in the cloud, so you can run these steps from Linux. The preview installs as its own Rehab app and runs without your laptop. This project uses SDK 57; the App Store edition of Expo Go does not support that SDK. See [Expo Go compatibility](https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/).
+
 ## 1. Railway API + PostgreSQL
 
 1. Put this repository in your GitHub account and create a Railway project.
@@ -56,11 +58,17 @@ The easiest independent trial is an EAS **preview build**, which runs without yo
    ```
 
 3. Follow the signing prompts using your Apple Developer account. Register the iPhone when prompted and install from the build link on that phone.
-4. In the app, connect using the Railway HTTPS URL and your personal token. Tokens are not embedded in the app bundle; iOS stores them using SecureStore.
+4. Enable **Settings → Privacy & Security → Developer Mode** on the iPhone, restart when prompted, and confirm. See [Expo's Developer Mode instructions](https://docs.expo.dev/guides/ios-developer-mode/).
+5. In the app, connect using the Railway HTTPS URL and the token created in the Railway API container. The existing local trial token belongs to your local database and will not authenticate against the new Railway database. Tokens are not embedded in the app bundle; iOS stores them using SecureStore.
+6. Commit and push the Expo project configuration changes made by `eas init`.
 
 The `development` profile supports Metro and debugging. The `production` profile is available for a later TestFlight/App Store build. No EAS project ID or Apple team has been invented in the configuration.
 
 References: [EAS setup](https://docs.expo.dev/build/setup/), [internal iOS distribution](https://docs.expo.dev/build/internal-distribution/).
+
+## Updating the trial
+
+Pushing to the GitHub branch connected to Railway deploys API changes when autodeploy is enabled. Programme, exercise and assessment changes made through the API appear after the app syncs. To deliver app code changes, run `npx eas-cli@latest build --platform ios --profile preview` from `apps/mobile` again and install the new build. EAS Update is not configured in v1.
 
 ## 3. Physical-device acceptance pass
 
