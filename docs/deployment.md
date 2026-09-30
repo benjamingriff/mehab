@@ -1,47 +1,72 @@
 # Railway and iPhone deployment
 
-The repository is prepared for deployment. Railway and Apple/Expo account setup, signing and installation are the remaining steps; nothing has been published automatically.
+The API is deployed to the **mehab** Railway project. Apple/Expo account setup, signing and iPhone installation are the remaining steps.
 
-You need a GitHub repository, a Railway account, an Expo account, and an active paid Apple Developer Program membership for the signed iPhone preview. EAS builds the iOS app in the cloud, so you can run these steps from Linux. The preview installs as its own Rehab app and runs without your laptop. This project uses SDK 57; the App Store edition of Expo Go does not support that SDK. See [Expo Go compatibility](https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/).
+You need an Expo account and an active paid Apple Developer Program membership for the signed iPhone preview. A GitHub repository is optional for CLI deployment. EAS builds the iOS app in the cloud, so you can run these steps from Linux. The preview installs as its own Rehab app and runs without your laptop. This project uses SDK 57; the App Store edition of Expo Go does not support that SDK. See [Expo Go compatibility](https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/).
 
 ## 1. Railway API + PostgreSQL
 
-1. Put this repository in your GitHub account and create a Railway project.
-2. Add Railway PostgreSQL.
-3. Add an API service from this repository. **Use the repository root**, not `apps/api`, as the build context. The root Dockerfile builds only the API and shared package.
-4. Set these API service variables:
+The existing deployment uses:
 
-   | Variable       | Value                                                                                |
-   | -------------- | ------------------------------------------------------------------------------------ |
-   | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (use your database service’s actual name)               |
-   | `NODE_ENV`     | `production`                                                                         |
-   | `CORS_ORIGINS` | Comma-separated browser origins, e.g. `http://localhost:8081` for your local preview |
+- [Railway project dashboard](https://railway.com/project/6b166b6a-1723-43b7-b171-1225d9f2fca2), environment `production`.
+- `Postgres`: Railway PostgreSQL with its persistent volume.
+- `rehab-api`: the root Dockerfile, connected through `${{Postgres.DATABASE_URL}}` on Railway's private network.
+- API URL: `https://rehab-api-production-e09b.up.railway.app`.
+- [Health](https://rehab-api-production-e09b.up.railway.app/health), [interactive API docs](https://rehab-api-production-e09b.up.railway.app/docs), [OpenAPI schema](https://rehab-api-production-e09b.up.railway.app/openapi.json).
 
-   Railway supplies `PORT`. The API listens on `0.0.0.0`. Native iPhone requests do not need a CORS origin.
+`.railway/railway.ts` replaces the deprecated `railway.json`. It declares only the API service; the existing database and volume remain separately managed. It sets the migration command, health check, Docker builder, restart policy and environment variables. Keep service variables in that file: applying IaC can remove variables omitted from the declaration. Never put literal credentials there.
 
-5. Deploy. `railway.json` runs the database migration before deployment and checks `/health` before routing traffic to the new instance.
-6. Generate a public HTTPS domain for the API. Visit `/health`, `/docs` and `/openapi.json` on that domain.
-7. Open a shell in the deployed API service using the Railway dashboard’s **Copy SSH Command**. In that shell, run:
+From a new checkout, install dependencies and link the existing service:
 
-   ```bash
-   node apps/api/dist/account.js "Your name"
-   ```
+```bash
+npm ci
+railway login
+railway link --project 6b166b6a-1723-43b7-b171-1225d9f2fca2 --environment production --service rehab-api
+```
 
-   Save the returned user ID and token. The command prints the token once, stores only its hash, and creates no sample medical data. For a replacement token on the same account, append the existing user UUID as the second argument.
+To apply infrastructure changes, review the plan before applying it:
 
-8. From your local repository, seed that account through the public API:
+```bash
+railway config plan
+railway config apply
+```
 
-   ```bash
-   export API_URL='https://your-api.up.railway.app'
-   read -rsp 'Personal token: ' API_TOKEN
-   export API_TOKEN
-   npm run seed
-   unset API_TOKEN
-   ```
+Deploy from the **repository root**, not `apps/api`:
 
-   Skip seeding if you want to load your actual clinician-provided programme using the API instead. The seed has four sessions every day to make the first trial straightforward.
+```bash
+railway up --service rehab-api --detach
+railway deployment list --service rehab-api
+```
 
-References: [Railway PostgreSQL](https://docs.railway.com/databases/postgresql), [Docker deployment](https://docs.railway.com/guides/express), [Railway SSH](https://docs.railway.com/cli/ssh).
+The migration runs before deployment, and `/health` must pass before traffic reaches the new instance. The API listens on `0.0.0.0:3000`. Browser requests from `http://localhost:8081` and `http://127.0.0.1:8081` are allowed; native iPhone requests do not need a CORS origin.
+
+### Account and trial data
+
+The deployed account credentials are saved locally in `.railway/credentials.local.json`, excluded from Git and Docker uploads and readable only by your OS user. Use its `apiUrl` and `token` fields when connecting the app. The local `.trial-account.txt` token belongs to a different database.
+
+The account already has the six-week sample programme, starting 30 September 2026, with four daily sessions and a daily check-in. No completion or symptom history has been fabricated; there is no need to seed it again.
+
+For an additional account, open a shell with `railway ssh --service rehab-api` and run:
+
+```bash
+node apps/api/dist/account.js "Your name"
+```
+
+Save the returned user ID and token. The command prints the token once, stores only its hash, and creates no sample medical data. For a replacement token on the same account, append the existing user UUID as the second argument.
+
+From your local repository, seed that account through the public API:
+
+```bash
+export API_URL='https://your-api.up.railway.app'
+read -rsp 'Personal token: ' API_TOKEN
+export API_TOKEN
+npm run seed
+unset API_TOKEN
+```
+
+Skip seeding if you want to load your actual clinician-provided programme using the API instead. The seed has four sessions every day to make the first trial straightforward.
+
+References: [Railway PostgreSQL](https://docs.railway.com/databases/postgresql), [Infrastructure as Code](https://docs.railway.com/infrastructure-as-code), [Railway SSH](https://docs.railway.com/cli/ssh).
 
 ## 2. Install on your iPhone
 
@@ -68,7 +93,9 @@ References: [EAS setup](https://docs.expo.dev/build/setup/), [internal iOS distr
 
 ## Updating the trial
 
-Pushing to the GitHub branch connected to Railway deploys API changes when autodeploy is enabled. Programme, exercise and assessment changes made through the API appear after the app syncs. To deliver app code changes, run `npx eas-cli@latest build --platform ios --profile preview` from `apps/mobile` again and install the new build. EAS Update is not configured in v1.
+Run `railway up --service rehab-api --detach` from the root to deploy API changes. This service was deployed through the CLI; GitHub autodeploy has not been configured. Changes to `.railway/railway.ts` require a separate `railway config plan` and `railway config apply` before uploading; deployment does not automatically apply IaC.
+
+Programme, exercise and assessment changes made through the API appear after the app syncs. To deliver app code changes, run `npx eas-cli@latest build --platform ios --profile preview` from `apps/mobile` again and install the new build. EAS Update is not configured in v1.
 
 ## 3. Physical-device acceptance pass
 

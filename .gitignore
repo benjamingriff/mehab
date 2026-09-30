@@ -11,6 +11,7 @@ coverage/
 artifacts/
 
 .trial-account.txt
+.railway/*.local.json
 
 test-results/
 playwright-report/
